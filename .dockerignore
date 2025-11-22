@@ -1,0 +1,27 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+.pio
+.platformio
+build/
+*.o
+*.a
+*.bin
+*.elf
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.log

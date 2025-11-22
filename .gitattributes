@@ -1,0 +1,9 @@
+# Exclude development files from Arduino Library Manager releases
+test/ export-ignore
+test_runner.sh export-ignore
+platformio.ini export-ignore
+Dockerfile export-ignore
+.dockerignore export-ignore
+.github/ export-ignore
+.copilot-prompt.md export-ignore
+README_TESTING.md export-ignore

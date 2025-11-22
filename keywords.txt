@@ -1,0 +1,18 @@
+# Syntax Coloring Map for GS308EP
+
+# Datatypes (KEYWORD1)
+GS308EP	KEYWORD1
+PoEPortStats	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+begin	KEYWORD2
+login	KEYWORD2
+isAuthenticated	KEYWORD2
+turnOnPoEPort	KEYWORD2
+turnOffPoEPort	KEYWORD2
+getPoEPortStatus	KEYWORD2
+cyclePoEPort	KEYWORD2
+getPoEPortPower	KEYWORD2
+getTotalPoEPower	KEYWORD2
+getAllPoEPortStats	KEYWORD2
+getLastResponseCode	KEYWORD2

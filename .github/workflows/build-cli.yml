@@ -1,0 +1,108 @@
+name: Build CLI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'cli/**'
+      - '.github/workflows/build-cli.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'cli/**'
+      - '.github/workflows/build-cli.yml'
+  workflow_dispatch:
+
+jobs:
+  build-native:
+    name: Build Native (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libcurl4-openssl-dev libssl-dev pkg-config
+    
+    - name: Install dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew install curl openssl pkg-config
+    
+    - name: Build CLI
+      working-directory: cli
+      run: make
+    
+    - name: Run unit tests
+      working-directory: cli
+      run: make test
+    
+    - name: Test binary
+      working-directory: cli
+      run: |
+        ./build/gs308ep --version
+        ./build/gs308ep --help
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gs308ep-cli-${{ matrix.os }}
+        path: cli/build/gs308ep
+        retention-days: 30
+
+  build-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker image
+      working-directory: cli
+      run: |
+        docker build -t gs308ep-cli:latest .
+    
+    - name: Test Docker image
+      run: |
+        docker run --rm gs308ep-cli:latest --version
+        docker run --rm gs308ep-cli:latest --help
+    
+    - name: Export Docker image
+      run: |
+        docker save gs308ep-cli:latest | gzip > gs308ep-cli-docker.tar.gz
+    
+    - name: Upload Docker image artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: gs308ep-cli-docker
+        path: gs308ep-cli-docker.tar.gz
+        retention-days: 30
+
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install cppcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cppcheck
+    
+    - name: Run cppcheck
+      working-directory: cli
+      run: |
+        cppcheck --enable=warning,style,performance --std=c++17 --error-exitcode=1 src/

@@ -1,0 +1,46 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker image
+      run: docker build -t gs308ep-test .
+      
+    - name: Run tests
+      run: docker run --rm gs308ep-test
+      
+    - name: Run tests with verbose output
+      if: failure()
+      run: docker run --rm gs308ep-test pio test -e native -vv
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install PlatformIO
+      run: pip install platformio
+      
+    - name: Check code formatting
+      run: pio check --skip-packages
