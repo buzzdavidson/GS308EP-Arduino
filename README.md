@@ -2,6 +2,10 @@
 
 This is an early attempt to use Claude Sonnet 4.5 to create a missing API.  The Netgear GS308EP PoE switch provides a web UI, but no formal API as is available in higher end switches.  Ultimately I just wanted to be able to control power to individual ports from an ESP32, but the switch also provides power consumption and other diagnostic information that are also useful. There is an excellent python library available (https://github.com/foxey/py-netgear-plus), so I used Sonnet to reverse engineer the GS308EP specific functionality into an Arduino library.  Added a simple CLI for good measure as well as full docker-based build and test environments.
 
+## Comments, contributions, and conversations
+
+Nov 23 2025: To be super clear: this is an experiment.  This library and code has not yet been thoroughly reviewed.  It's probably not super useful to many people, but if you do find it useful you probably don't want to use it anywhere important.  I'll release an official 1.0 version once i've thoroughly evaluated the code.  THAT SAID, if it's interesting enough to download, please share feedback!   
+
 # GS308EP Arduino Library
 
 Control Netgear GS308EP PoE switch from ESP32 via web scraping.
