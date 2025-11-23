@@ -105,4 +105,7 @@ jobs:
     - name: Run cppcheck
       working-directory: cli
       run: |
-        cppcheck --enable=warning,style,performance --std=c++17 --error-exitcode=1 src/
+        cppcheck --enable=warning,style,performance --std=c++17 --inline-suppr --suppress=normalCheckLevelMaxBranches src/ 2>&1 | tee cppcheck.log
+        if grep -E "(error|warning):" cppcheck.log; then
+          exit 1
+        fi

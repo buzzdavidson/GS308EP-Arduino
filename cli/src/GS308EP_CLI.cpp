@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include <numeric>
 #include <curl/curl.h>
 #include <openssl/md5.h>
 #include <unistd.h>
@@ -20,14 +21,14 @@ static const char *POE_STATUS_URL = "/getPoePortStatus.cgi";
 // CURL write callback
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
- ((std::string *)userp)->append((char *)contents, size * nmemb);
+ static_cast<std::string *>(userp)->append(static_cast<char *>(contents), size * nmemb);
  return size * nmemb;
 }
 
 // CURL header callback
 static size_t HeaderCallback(char *buffer, size_t size, size_t nitems, void *userdata)
 {
- ((std::string *)userdata)->append(buffer, size * nitems);
+ static_cast<std::string *>(userdata)->append(buffer, size * nitems);
  return size * nitems;
 }
 
@@ -157,7 +158,7 @@ std::string GS308EP_CLI::md5Hash(const std::string &input)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
- MD5((unsigned char *)input.c_str(), input.length(), digest);
+ MD5(reinterpret_cast<const unsigned char *>(input.c_str()), input.length(), digest);
 #pragma GCC diagnostic pop
 
  std::ostringstream oss;
@@ -315,7 +316,7 @@ bool GS308EP_CLI::login()
 
  // Step 3: POST login with hashed password
  std::string postData = "password=" + hash;
- std::string response = httpPost(LOGIN_URL, postData);
+ httpPost(LOGIN_URL, postData);
 
  if (last_response_code_ != 200 || cookie_sid_.empty())
  {
@@ -377,7 +378,7 @@ bool GS308EP_CLI::setPortState(int port, bool enabled)
  postData << "&DISCONNECT_TYP=2";
  postData << "&hash=" << client_hash_;
 
- std::string response = httpPost(POE_CONFIG_URL, postData.str());
+ httpPost(POE_CONFIG_URL, postData.str());
 
  return last_response_code_ == 200;
 }
@@ -844,12 +845,8 @@ void GS308EP_CLI::outputAllStats(const std::vector<PoEPortStats> &stats, bool js
        << ",\"fault\":\"" << stats[i].fault << "\"}";
   }
 
-  float total = 0;
-  for (const auto &s : stats)
-  {
-   total += s.power;
-  }
-
+  float total = std::accumulate(stats.begin(), stats.end(), 0.0f,
+   [](float sum, const PoEPortStats &s) { return sum + s.power; });
   oss << "],\"total_power\":" << std::fixed << std::setprecision(1) << total << "}";
   outputJSON(oss.str());
  }
@@ -871,12 +868,8 @@ void GS308EP_CLI::outputAllStats(const std::vector<PoEPortStats> &stats, bool js
    std::cout << std::endl;
   }
 
-  float total = 0;
-  for (const auto &s : stats)
-  {
-   total += s.power;
-  }
-
+  float total = std::accumulate(stats.begin(), stats.end(), 0.0f,
+   [](float sum, const PoEPortStats &s) { return sum + s.power; });
   std::cout << "Total Power Budget Used: " << std::fixed << std::setprecision(1) << total << " W / 65.0 W" << std::endl;
  }
 }
